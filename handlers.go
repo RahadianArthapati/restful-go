@@ -36,6 +36,19 @@ func fetchSingleEmployee(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": e})
 	}
 }
+func uploadEmployeeData(c *gin.Context) {
+	id := c.Param("id")
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		return
+	}
+	if err := c.SaveUploadedFile(file, file.Filename); err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+		return
+	}
+	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with id ", file.Filename, id))
+}
 func handleResponse(c *gin.Context, rows *sql.Rows, err error) {
 	var e []Employee
 	if err != nil {

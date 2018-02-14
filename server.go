@@ -19,16 +19,14 @@ type (
 
 func main() {
 	startDB()
-	r := gin.New()
-	r.Use(gin.Logger())
-
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-	r.Use(gin.Recovery())
-
-	v1 := r.Group("/api/v1/employees")
+	r := gin.Default()
+	r.MaxMultipartMemory = 8 << 20
+	//r.Static("/", "./public")
+	e := r.Group("/api/v1/employees")
 	{
-		v1.GET("/", fetchAllEmployees)
-		v1.GET("/:id", fetchSingleEmployee)
+		e.GET("/", fetchAllEmployees)
+		e.GET("/:id", fetchSingleEmployee)
+		e.POST("/:id/upload", uploadEmployeeData)
 		//v1.PUT("/:id", updateSingleEmployee)
 	}
 	// Listen and serve on 0.0.0.0:8080
