@@ -15,7 +15,12 @@ func fetchAllEmployees(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
 		return
 	} else {
-		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": e})
+		c.JSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"success": true,
+			"list":    e,
+			"page":    "{total: 100, current: 1, pageSize: 10}",
+		})
 	}
 
 	// rows, err := db.Table("employees").Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null").Rows()
@@ -43,7 +48,7 @@ func uploadEmployeeData(c *gin.Context) {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 		return
 	}
-	if err := c.SaveUploadedFile(file, file.Filename); err != nil {
+	if err := c.SaveUploadedFile(file, "./employee_data/"+file.Filename); err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 		return
 	}
