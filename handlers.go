@@ -12,7 +12,9 @@ import (
 func fetchEmployees(c *gin.Context) {
 	var e []Employee
 	id := c.DefaultQuery("id", "all")
-	if id == "all" {
+	keyword := c.Query("keyword")
+	field := c.Query("field")
+	if id == "all" && keyword == "" {
 		if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null").Find(&e).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
 			return
@@ -24,12 +26,43 @@ func fetchEmployees(c *gin.Context) {
 				"page":    "{total: 100, current: 1, pageSize: 10}",
 			})
 		}
+	} else if keyword != "" && field != "" {
+		if field == "name" {
+			if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null and employees.fullname LIKE ?", "%"+keyword+"%").Find(&e).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
+				return
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"status":  http.StatusOK,
+					"success": true,
+					"list":    e,
+					"page":    "{total: 1, current: 1, pageSize: 10}",
+				})
+			}
+		} else if field == "nip" {
+			if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null and employees.nip_new LIKE ?", "%"+keyword+"%").Find(&e).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
+				return
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"status":  http.StatusOK,
+					"success": true,
+					"list":    e,
+					"page":    "{total: 1, current: 1, pageSize: 10}",
+				})
+			}
+		}
+
 	} else {
 		if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.id = ?", id).Find(&e).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
 			return
 		} else {
-			c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": e})
+			c.JSON(http.StatusOK, gin.H{
+				"status":  http.StatusOK,
+				"success": true,
+				"data":    e,
+			})
 		}
 
 	}
