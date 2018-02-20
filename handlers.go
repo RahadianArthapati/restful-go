@@ -9,31 +9,36 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func fetchAllEmployees(c *gin.Context) {
+func fetchEmployees(c *gin.Context) {
 	var e []Employee
-	if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null").Find(&e).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
-		return
+	id := c.DefaultQuery("id", "all")
+	if id == "all" {
+		if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null").Find(&e).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  http.StatusOK,
+				"success": true,
+				"list":    e,
+				"page":    "{total: 100, current: 1, pageSize: 10}",
+			})
+		}
 	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  http.StatusOK,
-			"success": true,
-			"list":    e,
-			"page":    "{total: 100, current: 1, pageSize: 10}",
-		})
+		if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.id = ?", id).Find(&e).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": e})
+		}
+
 	}
-
-	// rows, err := db.Table("employees").Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.nip_new <> '' and employees.nip_new not like '%-%' and hist_jft.status is not null").Rows()
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
-	// handleResponse(c, rows, err)
-
 }
 func fetchSingleEmployee(c *gin.Context) {
+	log.Println("fetchSingleEmployee")
 	var e Employee
 	id := c.Param("id")
+	log.Println("ID : ", id)
 	if err := db.Select("employees.id, employees.nip_new, employees.fullname, hist_jft.status").Joins("JOIN hist_jft ON employees.id = hist_jft.id").Where("employees.id = ?", id).Find(&e).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": err})
 		return

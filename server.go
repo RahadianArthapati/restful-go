@@ -43,7 +43,7 @@ func main() {
 	//r.Static("/", "./public")
 	e := r.Group("/api/v1/employees")
 	{
-		e.GET("/", fetchAllEmployees)
+		e.GET("/", fetchEmployees)
 		e.GET("/:id", fetchSingleEmployee)
 		e.POST("/:id/upload", uploadEmployeeData)
 		//v1.PUT("/:id", updateSingleEmployee)
