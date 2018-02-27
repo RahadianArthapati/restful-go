@@ -44,8 +44,9 @@ func main() {
 	e := r.Group("/api/v1/employees")
 	{
 		e.GET("/", fetchEmployees)
-		e.GET("/:id", fetchSingleEmployee)
-		e.POST("/:id/upload", uploadEmployeeData)
+		e.GET("/user/:id", fetchSingleEmployee)
+		e.POST("/upload", uploadEmployeeData)
+		e.POST("/print", generate_report)
 		//v1.PUT("/:id", updateSingleEmployee)
 	}
 	// Listen and serve on 0.0.0.0:8080

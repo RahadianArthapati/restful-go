@@ -68,7 +68,6 @@ func fetchEmployees(c *gin.Context) {
 	}
 }
 func fetchSingleEmployee(c *gin.Context) {
-	log.Println("fetchSingleEmployee")
 	var e Employee
 	id := c.Param("id")
 	log.Println("ID : ", id)
